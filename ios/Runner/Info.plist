@@ -66,5 +66,18 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Questa app necessita del permesso di localizzazione per monitorare la tua posizione rispetto ai luoghi salvati.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Questa app necessita del permesso di localizzazione sempre attivo per avvisarti quando un contatto è vicino ai tuoi luoghi, anche in background.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Questa app necessita del permesso di localizzazione sempre attivo per avvisarti in background.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+		<string>audio</string>
+	</array>
 </dict>
 </plist>
