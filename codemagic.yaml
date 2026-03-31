@@ -10,8 +10,9 @@ workflows:
     triggering:
       events:
         - push
-      branches:
-        - main
+      branch_patterns:
+        - pattern: 'main'
+          include: true
     scripts:
       - name: Set up code signing
         script: |
@@ -30,6 +31,7 @@ workflows:
     publishing:
       email:
         recipients:
-          - morterix01@gmail.com # placeholder, Codemagic lo usa comunque dall'account
-        on_failure: true
-        on_success: true
+          - morterix01@gmail.com 
+        notify:
+          success: true
+          failure: true
