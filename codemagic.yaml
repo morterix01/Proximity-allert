@@ -22,10 +22,15 @@ workflows:
       - name: Flutter pub get
         script: |
           flutter pub get
-      - name: Build iOS IPA
+      - name: Build iOS and Manual Package IPA
         script: |
-          # Usiamo --no-codesign per generare l'IPA senza firma digitale reale (per test)
-          flutter build ipa --release --no-codesign
+          flutter build ios --release --no-codesign
+          mkdir -p build/ios/iphoneos/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cd build/ios/iphoneos
+          zip -r ProximityAlert.ipa Payload
+          mkdir -p ../ipa
+          cp ProximityAlert.ipa ../ipa/
     artifacts:
       - build/ios/ipa/*.ipa
     publishing:
