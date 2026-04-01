@@ -83,12 +83,16 @@ void onStart(ServiceInstance service) async {
       );
 
       if (audioPlayer.state != PlayerState.playing) {
-        if (storage.isCustomAudio && storage.audioPath.isNotEmpty) {
-          await audioPlayer.play(DeviceFileSource(storage.audioPath), volume: 1.0);
-        } else {
-          await audioPlayer.play(AssetSource('audio/Star Labs alarm.mp3'), volume: 1.0);
+        try {
+          await audioPlayer.setReleaseMode(ReleaseMode.loop);
+          if (storage.isCustomAudio && storage.audioPath.isNotEmpty) {
+            await audioPlayer.play(DeviceFileSource(storage.audioPath), volume: 1.0);
+          } else {
+            await audioPlayer.play(AssetSource('audio/star_labs_alarm.mp3'), volume: 1.0);
+          }
+        } catch (e) {
+          // Fallback or ignore
         }
-        audioPlayer.setReleaseMode(ReleaseMode.loop);
       }
 
       try {

@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import '../services/storage_service.dart';
 import '../widgets/neon_button.dart';
 import '../widgets/premium_text_field.dart';
@@ -49,12 +51,19 @@ class _ConfigScreenState extends State<ConfigScreen> {
       );
 
       if (result != null && result.files.single.path != null) {
-        String path = result.files.single.path!;
+        String tempPath = result.files.single.path!;
         String name = result.files.single.name;
+        
+        final directory = await getApplicationDocumentsDirectory();
+        final customAudioPath = '${directory.path}/$name';
+        
+        final File tempFile = File(tempPath);
+        await tempFile.copy(customAudioPath);
+
         setState(() {
           _audioLabel = name;
         });
-        await _storage.setAudioPath(path);
+        await _storage.setAudioPath(customAudioPath);
         await _storage.setAudioName(name);
         await _storage.setCustomAudio(true);
       }

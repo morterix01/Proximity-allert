@@ -92,9 +92,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     final service = FlutterBackgroundService();
-    bool isRunningNow = await service.isRunning();
 
-    if (isRunningNow) {
+    if (isRunning) {
+      await _storage.setMonitoring(false);
       service.invoke("stopService");
       _stopLocalPolling();
       setState(() {
