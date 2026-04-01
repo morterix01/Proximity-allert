@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dashboard_screen.dart';
@@ -27,12 +28,14 @@ class _SplashScreenState extends State<SplashScreen> {
       statusText = "Verifica permessi...";
     });
     
-    // Su iOS le notifiche sono fondamentali
-    await Permission.notification.request();
-    
-    // La localizzazione "Sempre" è necessaria per il background su iOS
-    if (await Permission.locationWhenInUse.request().isGranted) {
-      await Permission.locationAlways.request();
+    if (!kIsWeb) {
+      // Su iOS le notifiche sono fondamentali
+      await Permission.notification.request();
+      
+      // La localizzazione "Sempre" è necessaria per il background su iOS
+      if (await Permission.locationWhenInUse.request().isGranted) {
+        await Permission.locationAlways.request();
+      }
     }
 
     setState(() {
