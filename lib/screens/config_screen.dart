@@ -43,7 +43,8 @@ class _ConfigScreenState extends State<ConfigScreen> {
 
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.audio,
+        type: FileType.custom,
+        allowedExtensions: ['mp3', 'wav', 'm4a', 'aac'],
         allowMultiple: false,
       );
 

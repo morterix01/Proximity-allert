@@ -79,5 +79,11 @@
 		<string>remote-notification</string>
 		<string>audio</string>
 	</array>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Questa app necessita del permesso per accedere alla libreria musicale (se richiesto dal sistema) per permetterti di scegliere un suono di allarme personalizzato.</string>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>
