@@ -13,6 +13,8 @@ class StorageService {
   static const String keyLocations = 'locations';
   static const String keyCookies = 'google_cookies';
   static const String keyMonitoring = 'is_monitoring';
+  static const String keyAudioPath = 'custom_audio_path';
+  static const String keyAudioName = 'custom_audio_name';
 
   late SharedPreferences prefs;
 
@@ -34,6 +36,12 @@ class StorageService {
 
   bool get isMonitoring => prefs.getBool(keyMonitoring) ?? false;
   Future<void> setMonitoring(bool value) => prefs.setBool(keyMonitoring, value);
+
+  String get audioPath => prefs.getString(keyAudioPath) ?? '';
+  Future<void> setAudioPath(String value) => prefs.setString(keyAudioPath, value);
+
+  String get audioName => prefs.getString(keyAudioName) ?? 'Allarme Labs';
+  Future<void> setAudioName(String value) => prefs.setString(keyAudioName, value);
 
   List<MonitoredLocation> getLocations() {
     String? jsonStr = prefs.getString(keyLocations);

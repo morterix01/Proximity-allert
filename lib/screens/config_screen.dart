@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 import '../services/storage_service.dart';
 import '../widgets/neon_button.dart';
 import '../widgets/premium_text_field.dart';
@@ -24,16 +25,34 @@ class _ConfigScreenState extends State<ConfigScreen> {
     super.initState();
     _emailController.text = _storage.email;
     _ntfyController.text = _storage.ntfyTopic;
-    if (_storage.isCustomAudio) {
-      _audioLabel = "Personalizzato";
-    }
+    _audioLabel = _storage.audioName;
   }
 
   void _chooseAudio() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.single.path != null) {
+      String path = result.files.single.path!;
+      String name = result.files.single.name;
+      setState(() {
+        _audioLabel = name;
+      });
+      await _storage.setAudioPath(path);
+      await _storage.setAudioName(name);
+      await _storage.setCustomAudio(true);
+    }
+  }
+
+  void _resetAudio() async {
     setState(() {
-      _audioLabel = "Personalizzato";
+      _audioLabel = "Allarme Labs";
     });
-    await _storage.setCustomAudio(true);
+    await _storage.setAudioPath('');
+    await _storage.setAudioName('Allarme Labs');
+    await _storage.setCustomAudio(false);
   }
 
   void _saveAndExit() async {
@@ -179,6 +198,15 @@ class _ConfigScreenState extends State<ConfigScreen> {
                                 text: 'CAMBIA SUONO',
                                 onPressed: _chooseAudio,
                               ),
+                              const SizedBox(height: 10),
+                              if (_audioLabel != "Allarme Labs")
+                                TextButton(
+                                  onPressed: _resetAudio,
+                                  child: const Text(
+                                    "RIPRISTINA PREDEFINITO",
+                                    style: TextStyle(color: Color(0xFFFF4D4D), fontSize: 11),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
