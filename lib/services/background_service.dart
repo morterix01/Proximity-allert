@@ -24,7 +24,7 @@ void onStart(ServiceInstance service) async {
   await audioPlayer.setAudioContext(AudioContext(
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
-      options: {
+      options: const {
         AVAudioSessionOptions.mixWithOthers,
         AVAudioSessionOptions.duckOthers,
       },

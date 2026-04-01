@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_cookie_manager/webview_cookie_manager.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import '../services/storage_service.dart';
 import '../widgets/neon_button.dart';
@@ -57,22 +58,40 @@ class _CookieScreenState extends State<CookieScreen> {
       }
 
       if (_controller == null) return;
-      final String cookiesString =
-          await _controller!.runJavaScriptReturningResult('document.cookie') as String;
+      
+      try {
+        final cookieManager = WebviewCookieManager();
+        final gotCookies = await cookieManager.getCookies('https://google.com');
+        final accountsCookies = await cookieManager.getCookies('https://accounts.google.com');
+        
+        // Combine cookies to ensure we catch everything
+        final Map<String, String> allCookies = {};
+        for (var c in gotCookies) {
+          allCookies[c.name] = c.value;
+        }
+        for (var c in accountsCookies) {
+          allCookies[c.name] = c.value;
+        }
 
-      String rawCookies = cookiesString.replaceAll('"', '');
-      bool hasSid = rawCookies.contains('SID=');
-      String formattedCookies = rawCookies;
+        bool hasSid = allCookies.containsKey('SID');
+        
+        if (hasSid && mounted) {
+          timer.cancel();
+          
+          String formattedCookies = allCookies.entries
+              .map((e) => '${e.key}=${e.value}')
+              .join('; ');
 
-      if (hasSid && mounted) {
-        timer.cancel();
-        await _storage.setCookies(formattedCookies);
-        setState(() {
-          _status = "Cookie salvati! Torno indietro...";
-          _isWebViewOpen = false;
-        });
-        await Future.delayed(const Duration(seconds: 2));
-        if (mounted) Navigator.pop(context);
+          await _storage.setCookies(formattedCookies);
+          setState(() {
+            _status = "Cookie salvati! Torno indietro...";
+            _isWebViewOpen = false;
+          });
+          await Future.delayed(const Duration(seconds: 2));
+          if (mounted) Navigator.pop(context);
+        }
+      } catch (e) {
+        debugPrint("Cookie extraction error: $e");
       }
     });
   }
