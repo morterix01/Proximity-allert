@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/storage_service.dart';
@@ -29,20 +30,35 @@ class _ConfigScreenState extends State<ConfigScreen> {
   }
 
   void _chooseAudio() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.audio,
-      allowMultiple: false,
-    );
+    if (kIsWeb) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("La scelta dei file è disponibile solo su iPhone reale."),
+          backgroundColor: Color(0xFFFF4D4D),
+        ),
+      );
+      return;
+    }
 
-    if (result != null && result.files.single.path != null) {
-      String path = result.files.single.path!;
-      String name = result.files.single.name;
-      setState(() {
-        _audioLabel = name;
-      });
-      await _storage.setAudioPath(path);
-      await _storage.setAudioName(name);
-      await _storage.setCustomAudio(true);
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.audio,
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        String path = result.files.single.path!;
+        String name = result.files.single.name;
+        setState(() {
+          _audioLabel = name;
+        });
+        await _storage.setAudioPath(path);
+        await _storage.setAudioName(name);
+        await _storage.setCustomAudio(true);
+      }
+    } catch (e) {
+      debugPrint("Errore selezione file: $e");
     }
   }
 
