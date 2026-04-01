@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
 import '../widgets/neon_button.dart';
@@ -46,77 +47,176 @@ class _ConfigScreenState extends State<ConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0A14),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(30.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'SETTINGS',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      body: Stack(
+        children: [
+          // Background Blobs
+          Positioned(
+            top: -50,
+            right: -50,
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                color: const Color(0xFF00F2FF).withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            left: -80,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF4D4D).withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 70, sigmaY: 70),
+              child: const SizedBox(),
+            ),
+          ),
+          
+          SafeArea(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'IMPOSTAZIONI',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 48), // Spacer for centering
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 30),
-              PremiumTextField(
-                hintText: 'Email Google',
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 20),
-              PremiumTextField(
-                hintText: 'Ntfy Topic',
-                controller: _ntfyController,
-              ),
-              const SizedBox(height: 30),
-              Row(
-                children: [
-                  Expanded(
-                    child: NeonButton(
-                      text: 'SUONO ALLARME',
-                      onPressed: _chooseAudio,
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "ACCOUNT & NOTIFICHE",
+                                style: TextStyle(
+                                  color: Color(0xFF00F2FF),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              PremiumTextField(
+                                hintText: 'Email Google',
+                                controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              const SizedBox(height: 15),
+                              PremiumTextField(
+                                hintText: 'Ntfy Topic',
+                                controller: _ntfyController,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.03),
+                            borderRadius: BorderRadius.circular(25),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.music_note, color: Colors.white70),
+                                  const SizedBox(width: 15),
+                                  const Expanded(
+                                    child: Text(
+                                      "Suono Allarme",
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                  Text(
+                                    _audioLabel,
+                                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              NeonButton(
+                                text: 'CAMBIA SUONO',
+                                onPressed: _chooseAudio,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        NeonButton(
+                          text: 'GESTIONE COOKIE',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const CookieScreen()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 15),
+                        NeonButton(
+                          text: 'GESTIONE LUOGHI',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LocationScreen()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                        NeonButton(
+                          text: 'SALVA CONFIGURAZIONE',
+                          baseColor: const Color(0xFF00F2FF),
+                          onPressed: _saveAndExit,
+                        ),
+                        const SizedBox(height: 30),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 15),
-                  Text(
-                    _audioLabel,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              NeonButton(
-                text: 'GESTIONE COOKIE',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const CookieScreen()),
-                  );
-                },
-              ),
-              const SizedBox(height: 20),
-              NeonButton(
-                text: 'GESTIONE LUOGHI',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const LocationScreen()),
-                  );
-                },
-              ),
-              const SizedBox(height: 40),
-              NeonButton(
-                text: 'SALVA E ESCI',
-                onPressed: _saveAndExit,
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

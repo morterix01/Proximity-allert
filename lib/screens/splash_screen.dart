@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dashboard_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -23,9 +24,21 @@ class _SplashScreenState extends State<SplashScreen> {
     });
     await Future.delayed(const Duration(seconds: 1));
     setState(() {
+      statusText = "Verifica permessi...";
+    });
+    
+    // Su iOS le notifiche sono fondamentali
+    await Permission.notification.request();
+    
+    // La localizzazione "Sempre" è necessaria per il background su iOS
+    if (await Permission.locationWhenInUse.request().isGranted) {
+      await Permission.locationAlways.request();
+    }
+
+    setState(() {
       statusText = "Quasi pronto...";
     });
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
     Navigator.pushReplacement(
       context,

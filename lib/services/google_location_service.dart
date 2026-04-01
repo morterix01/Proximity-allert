@@ -35,28 +35,40 @@ class GoogleLocationService {
     try {
       List<dynamic> data = jsonDecode(jsonStr);
       if (data.length > 6 && data[6] == 'GgA=') {
-        debugPrint("Not authenticated anymore");
+        debugPrint("Google Alert: Not authenticated anymore (GgA)");
         return [];
       }
 
-      if (data.isEmpty || data[0] == null) return [];
+      if (data.isEmpty || data[0] == null) {
+        debugPrint("Google Alert: Response data[0] is null/empty");
+        return [];
+      }
 
       List<dynamic> sharedPeopleList = data[0];
       List<Person> people = [];
+      debugPrint("Found ${sharedPeopleList.length} shared people in raw data");
 
       for (var entry in sharedPeopleList) {
         try {
+          if (entry.length < 7 || entry[6] == null) continue;
+          
           final id = entry[6][0].toString();
           final avatarUrl = entry[6][1].toString();
           final fullName = entry[6][2].toString();
           
-          final lat = double.parse(entry[1][1][2].toString());
-          final lon = double.parse(entry[1][1][1].toString());
-          final timestamp = int.parse(entry[1][2].toString());
+          // Location info usually at index 1
+          if (entry[1] == null || entry[1].length < 3) continue;
+          
+          // entry[1][1] is [unknown, lon, lat, ...]
+          if (entry[1][1] == null || entry[1][1].length < 3) continue;
+          
+          final lat = double.tryParse(entry[1][1][2].toString()) ?? 0.0;
+          final lon = double.tryParse(entry[1][1][1].toString()) ?? 0.0;
+          final timestamp = int.tryParse(entry[1][2].toString()) ?? 0;
           
           double accuracy = 0.0;
           if (entry[1].length > 3 && entry[1][3] != null) {
-              accuracy = double.parse(entry[1][3].toString());
+              accuracy = double.tryParse(entry[1][3].toString()) ?? 0.0;
           }
           String address = "";
           if (entry[1].length > 4 && entry[1][4] != null) {
@@ -65,10 +77,12 @@ class GoogleLocationService {
 
           int battery = 0;
           bool isCharging = false;
-          if (entry.length > 13 && entry[13] != null) {
-             battery = int.parse(entry[13][1].toString());
+          if (entry.length > 13 && entry[13] != null && entry[13].length > 1) {
+             battery = int.tryParse(entry[13][1].toString()) ?? 0;
              isCharging = entry[13][0] == 1;
           }
+
+          debugPrint("Parsed person: $fullName at $lat, $lon");
 
           people.add(Person(
             id: id,
@@ -82,13 +96,13 @@ class GoogleLocationService {
             isCharging: isCharging,
             timestampMs: timestamp,
           ));
-        } catch (e) {
-          // Skip if one person is malformed
+        } catch (innerE) {
+          debugPrint("Failed parsing individual entry: $innerE");
         }
       }
       return people;
     } catch (e) {
-      debugPrint("Error parsing JSON: $e");
+      debugPrint("Error parsing JSON overall: $e");
       return [];
     }
   }

@@ -19,8 +19,25 @@ void onStart(ServiceInstance service) async {
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  
+  // Audio context for iOS background playback
+  await audioPlayer.setAudioContext(AudioContext(
+    iOS: AudioContextIOS(
+      category: AVAudioSessionCategory.playback,
+      options: {
+        AVAudioSessionOptions.mixWithOthers,
+        AVAudioSessionOptions.duckOthers,
+      },
+    ),
+    android: const AudioContextAndroid(),
+  ));
+
   const DarwinInitializationSettings initializationSettingsDarwin =
-      DarwinInitializationSettings();
+      DarwinInitializationSettings(
+    requestAlertPermission: true,
+    requestBadgePermission: true,
+    requestSoundPermission: true,
+  );
   const InitializationSettings initializationSettings =
       InitializationSettings(iOS: initializationSettingsDarwin);
   await flutterLocalNotificationsPlugin.initialize(initializationSettings);
