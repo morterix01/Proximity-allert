@@ -25,9 +25,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final Distance _distance = const Distance();
 
   bool isRunning = false;
+  bool isLoading = false;
   String lastUpdate = "Mai";
   List<Person> people = [];
   Timer? _pollingTimer;
+
+  String _getFormattedDate(DateTime date) {
+    const months = [
+      'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
+      'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'
+    ];
+    String day = date.day.toString();
+    String month = months[date.month - 1];
+    String hour = date.hour.toString().padLeft(2, '0');
+    String minute = date.minute.toString().padLeft(2, '0');
+    String second = date.second.toString().padLeft(2, '0');
+    return "$day $month, $hour:$minute:$second";
+  }
 
   @override
   void initState() {
@@ -50,11 +64,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _fetchData() async {
+    if (!mounted) return;
+    setState(() => isLoading = true);
+    
     final fetchedPeople = await _locationService.getSharedPeople();
+    
     if (mounted) {
       setState(() {
         people = fetchedPeople;
-        lastUpdate = DateTime.now().toString().split('.').first;
+        lastUpdate = _getFormattedDate(DateTime.now());
+        isLoading = false;
       });
     }
   }
@@ -181,58 +200,80 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: ListView.builder(
-                  itemCount: people.length,
-                  itemBuilder: (context, index) {
-                    final person = people[index];
-
-                    double closestDist = double.infinity;
-                    String closestLocName = "Nessuna";
-
-                    for (var loc in locations) {
-                      final d = _distance.as(
-                          LengthUnit.Meter,
-                          LatLng(person.latitude, person.longitude),
-                          LatLng(loc.lat, loc.lon));
-                      if (d < closestDist) {
-                        closestDist = d;
-                        closestLocName = loc.name;
-                      }
-                    }
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            person.fullName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: 16,
+                child: isLoading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF00F2FF),
+                        ),
+                      )
+                    : people.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(20.0),
+                              child: Text(
+                                isRunning
+                                    ? "Nessuna persona trovata.\nVerifica i Cookie se il problema persiste."
+                                    : "Premi START per monitorare",
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
                             ),
+                          )
+                        : ListView.builder(
+                            itemCount: people.length,
+                            itemBuilder: (context, index) {
+                              final person = people[index];
+
+                              double closestDist = double.infinity;
+                              String closestLocName = "Nessuna";
+
+                              for (var loc in locations) {
+                                final d = _distance.as(
+                                    LengthUnit.Meter,
+                                    LatLng(person.latitude, person.longitude),
+                                    LatLng(loc.lat, loc.lon));
+                                if (d < closestDist) {
+                                  closestDist = d;
+                                  closestLocName = loc.name;
+                                }
+                              }
+
+                              return Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                padding: const EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      person.fullName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      closestLocName == "Nessuna"
+                                          ? "Nessun luogo configurato"
+                                          : "Vicino a: $closestLocName (${closestDist.toStringAsFixed(0)}m)",
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                          const SizedBox(height: 5),
-                          Text(
-                            closestLocName == "Nessuna"
-                                ? "Nessun luogo configurato"
-                                : "Vicino a: $closestLocName (${closestDist.toStringAsFixed(0)}m)",
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
               ),
               NeonButton(
                 text: isRunning ? 'STOP' : 'START',

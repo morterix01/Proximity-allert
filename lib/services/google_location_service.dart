@@ -33,14 +33,21 @@ class GoogleLocationService {
     }
 
     try {
-      List<dynamic> data = jsonDecode(jsonStr);
+      List<dynamic> data;
+      try {
+        data = jsonDecode(jsonStr);
+      } catch (e) {
+        debugPrint("Google Alert: JSON Decode Failed. Raw snippet: ${jsonStr.length > 50 ? jsonStr.substring(0, 50) : jsonStr}");
+        return [];
+      }
+
       if (data.length > 6 && data[6] == 'GgA=') {
-        debugPrint("Google Alert: Not authenticated anymore (GgA)");
+        debugPrint("Google Alert: Not authenticated anymore (GgA). Check Cookies.");
         return [];
       }
 
       if (data.isEmpty || data[0] == null) {
-        debugPrint("Google Alert: Response data[0] is null/empty");
+        debugPrint("Google Alert: Response data[0] is null/empty. Cookies might be restricted.");
         return [];
       }
 
