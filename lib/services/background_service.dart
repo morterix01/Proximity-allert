@@ -20,8 +20,10 @@ void onStart(ServiceInstance service) async {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   
+  final AudioPlayer keepAlivePlayer = AudioPlayer();
+  
   // Audio context for iOS background playback
-  await audioPlayer.setAudioContext(AudioContext(
+  final AudioContext audioContext = AudioContext(
     iOS: AudioContextIOS(
       category: AVAudioSessionCategory.playback,
       options: const {
@@ -30,7 +32,10 @@ void onStart(ServiceInstance service) async {
       },
     ),
     android: const AudioContextAndroid(),
-  ));
+  );
+
+  await audioPlayer.setAudioContext(audioContext);
+  await keepAlivePlayer.setAudioContext(audioContext);
 
   const DarwinInitializationSettings initializationSettingsDarwin =
       DarwinInitializationSettings(
@@ -47,7 +52,11 @@ void onStart(ServiceInstance service) async {
   const NotificationDetails notificationDetails =
       NotificationDetails(iOS: iosNotificationDetails);
 
-  Timer.periodic(const Duration(seconds: 30), (timer) async {
+  // KEEP-ALIVE LOOP
+  await keepAlivePlayer.setReleaseMode(ReleaseMode.loop);
+  await keepAlivePlayer.play(AssetSource('audio/silence.wav'), volume: 0.1);
+
+  Future<void> performProximityCheck() async {
     if (!storage.isMonitoring) return;
 
     final people = await googleLocationService.getSharedPeople();
@@ -112,9 +121,18 @@ void onStart(ServiceInstance service) async {
         await audioPlayer.stop();
       }
     }
+  }
+
+  // Esegui immediatamente al primo avvio
+  await performProximityCheck();
+
+  // Esegui periodicamente ogni 15 secondi (più veloce di 30)
+  Timer.periodic(const Duration(seconds: 15), (timer) async {
+    await performProximityCheck();
   });
 
   service.on('stopService').listen((event) async {
+    await keepAlivePlayer.stop();
     await audioPlayer.stop();
     await storage.setMonitoring(false);
     service.stopSelf();

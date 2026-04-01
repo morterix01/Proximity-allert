@@ -31,3 +31,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/audio/star_labs_alarm.mp3
+    - assets/audio/silence.wav
